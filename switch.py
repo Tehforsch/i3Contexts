@@ -74,7 +74,7 @@ class Workspace:
     @property
     def name(self):
         if self.context.shared:
-            return sharedWorkspaceNames[self.id_]
+            return sharedWorkspaceNameFormat.format(workspaceId=self.id_, workspaceName=sharedWorkspaceNames[self.id_])
         return workspaceNameFormat.format(workspaceId=self.id_, contextName=self.context.name, workspaceNumber=self.number)
 
     def __str__(self):
