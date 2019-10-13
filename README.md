@@ -34,6 +34,7 @@ When moving from a shared workspace back to a normal, context-based workspace th
 `switch.py context n --move`
 
 ## Example configuration
+1. Put something like this in the i3 configuration file
 ```
 set $i3contexs python3 PATH/TO/SWITCH.PY
 # Context switching
@@ -62,6 +63,8 @@ bindsym $mod+Shift+v exec $i3contexts workspace --move music
 bindsym $mod+Shift+c exec $i3contexts workspace --move chat
 ```
 
+2. The names of the shared workspaces need to be entered in sharedWorkspaceNames in config.py
+3. If you want to have more than 100 workspaces per context (why?) it will be necessary to increase "workspacesPerContext" in config.py
 
 ## Todo
 1. Currently the last context we were on before we switched to a shared workspace is tracked by writing to a file in the home folder. This is about as hacky as it gets and should probably be replaced by having some daemon run in the background that keeps track of the context but this also comes with its own problems
