@@ -70,3 +70,4 @@ bindsym $mod+Shift+c exec $i3contexts workspace --move chat
 ## Todo
 1. Currently the last context we were on before we switched to a shared workspace is tracked by writing to a file in the home folder. This is about as hacky as it gets and should probably be replaced by having some daemon run in the background that keeps track of the context but this also comes with its own problems
 2. Currently there is no good system implemented for assigning default outputs to certain workspace numbers but that should not be hard to solve.
+3. Read from a configuration file instead of config.py
