@@ -63,6 +63,7 @@ bindsym $mod+Shift+v exec $i3contexts workspace --move music
 bindsym $mod+Shift+c exec $i3contexts workspace --move chat
 ```
 
+After adding bindings the following configurations are optional:
 2. An example ~/.i3Context configuration file is given in exampleConfig. Here you can define the name of the contexts, shared workspaces and a map defining to which outputs a workspace should be assigned initially.
 3. Putting `strip_workspace_numbers yes` in the i3bar config makes the shown workspace names a lot prettier.
 

@@ -41,6 +41,10 @@ class Workspace:
     def __init__(self, id_):
         self.id_ = id_
 
+    def __eq__(self, other):
+        if self.id_ == other.id_:
+            assert self.name == other.name
+        return self.id_ == other.id_
     @property
     def contextNumber(self):
         return (self.id_ - minContextOffset) // offsetPerContext
@@ -66,10 +70,14 @@ class Workspace:
         workspaces = i3.get_workspaces()
         for ws in workspaces:
             if ws["focused"] == True:
-                if ws["name"] in sharedWorkspaceNames:
-                    return Workspace.fromSharedName(ws["name"])
-                else:
-                    return Workspace(ws["num"])
+                return Workspace.fromI3Workspace(ws)
+
+    @staticmethod
+    def fromI3Workspace(i3workspace):
+        if i3workspace["name"] in sharedWorkspaceNames:
+            return Workspace.fromSharedName(i3workspace["name"])
+        else:
+            return Workspace(i3workspace["num"])
 
     @staticmethod
     def fromSharedName(name):
@@ -78,6 +86,14 @@ class Workspace:
             return Workspace(sharedWorkspaceNames.index(rawName))
         else:
             return Workspace(sharedWorkspaceNames.index(name))
+
+    @staticmethod
+    def fromFirstNonEmptyOnSameContext(source):
+        for i3workspace in sorted(i3.get_workspaces(), key = lambda ws: ws["num"]):
+            workspace = Workspace.fromI3Workspace(i3workspace)
+            if workspace.context == source.context:
+                return workspace
+        return source
 
     @property
     def rawName(self):
@@ -129,10 +145,15 @@ def switchOrMove(sourceWorkspace, targetWorkspace, move):
 def changeToPreferredOutput(targetWorkspace):
     availableOutputs = [output["name"] for output in i3.get_outputs()]
     for (output, workspaces) in outputMap.items():
-        print(targetWorkspace.rawName)
         if output in availableOutputs and targetWorkspace.rawName in workspaces:
             print("Changing to {}".format(output))
             i3ChangeOutput(output)
+
+def handleDoublePress(source, target):
+    if source == target and doublePressToNonEmpty:
+        return Workspace.fromFirstNonEmptyOnSameContext(source)
+    else:
+        return target
 
 def getTargetWorkspace(args, source, lastNonSharedContext):
     if args.type == "workspace":
@@ -150,7 +171,9 @@ def getTargetWorkspace(args, source, lastNonSharedContext):
         if source.context.shared:
             return source
         assert type(args.target) == int
-        return Workspace.fromNumbers(args.target, source.number)
+        target = Workspace.fromNumbers(args.target, source.number)
+        target = handleDoublePress(source, target)
+        return target
 
 def main(args):
     focusedWorkspace = Workspace.fromFocus()
