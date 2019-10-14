@@ -13,7 +13,6 @@ offsetPerContext = workspacesPerContext
 minContextOffset = ceil(numSharedWorkspaces / offsetPerContext) * offsetPerContext
 
 SHARED_CONTEXT = -1
-print(offsetPerContext, minContextOffset)
 
 class Context:
     def __init__(self, id_):
