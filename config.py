@@ -14,3 +14,4 @@ config = readConfigFile()
 sharedWorkspaceNames = config["sharedWorkspaceNames"]
 workspacesPerContext = config["workspacesPerContext"]
 contextNames = config["contextNames"]
+outputMap = config["outputMap"]

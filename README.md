@@ -63,10 +63,8 @@ bindsym $mod+Shift+v exec $i3contexts workspace --move music
 bindsym $mod+Shift+c exec $i3contexts workspace --move chat
 ```
 
-2. The names of the shared workspaces need to be entered in sharedWorkspaceNames in config.py
-3. Unless you like ugly workspace names put `strip_workspace_numbers yes` in the i3bar config
-4. If you want to have more than 100 workspaces per context (why?) it will be necessary to increase "workspacesPerContext" in config.py
+2. An example ~/.i3Context configuration file is given in exampleConfig. Here you can define the name of the contexts, shared workspaces and a map defining to which outputs a workspace should be assigned initially.
+3. Putting `strip_workspace_numbers yes` in the i3bar config makes the shown workspace names a lot prettier.
 
 ## Todo
 1. Currently the last context we were on before we switched to a shared workspace is tracked by writing to a file in the home folder. This is about as hacky as it gets and should probably be replaced by having some daemon run in the background that keeps track of the context but this also comes with its own problems
-2. Currently there is no good system implemented for assigning default outputs to certain workspace numbers but that should not be hard to solve.

@@ -53,6 +53,10 @@ class Workspace:
     def number(self):
         return self.id_ - self.contextNumber * offsetPerContext - minContextOffset
 
+    @property
+    def isOpenAlready(self):
+        return any(ws["name"] == self.name for ws in i3.get_workspaces())
+
     @staticmethod
     def fromNumbers(contextId, workspaceNumber):
         return Workspace(minContextOffset + offsetPerContext * contextId + workspaceNumber)
@@ -61,11 +65,11 @@ class Workspace:
     def fromFocus():
         workspaces = i3.get_workspaces()
         for ws in workspaces:
-            if ws['focused'] == True:
-                if ws['name'] in sharedWorkspaceNames:
-                    return Workspace.fromSharedName(ws['name'])
+            if ws["focused"] == True:
+                if ws["name"] in sharedWorkspaceNames:
+                    return Workspace.fromSharedName(ws["name"])
                 else:
-                    return Workspace(ws['num'])
+                    return Workspace(ws["num"])
 
     @staticmethod
     def fromSharedName(name):
@@ -74,6 +78,13 @@ class Workspace:
             return Workspace(sharedWorkspaceNames.index(rawName))
         else:
             return Workspace(sharedWorkspaceNames.index(name))
+
+    @property
+    def rawName(self):
+        if self.context.shared:
+            return self.name.split(":")[1]
+        else:
+            return self.number
 
     @property
     def name(self):
@@ -86,36 +97,6 @@ class Workspace:
 
     def __repr__(self):
         return str(self)
-
-# def getSharedWorkspaceId(sharedWorkspaceNumber):
-#     return sharedWorkspaceNames.index(sharedWorkspaceNumber)
-
-# def getSharedWorkspaceName(sharedWorkspaceName):
-#     assert sharedWorkspaceName in sharedWorkspaceNames
-#     workspaceId = getSharedWorkspaceId(sharedWorkspaceName)
-#     return sharedWorkspaceNameFormat.format(workspaceId=workspaceId, workspaceName=sharedWorkspaceName)
-
-# def getWorkspaceName(contextNumber, workspaceNumber):
-#     contextName = getContextName(contextNumber)
-#     workspaceId = getWorkspaceId(contextNumber, workspaceNumber)
-#     workspaceName = workspaceNameFormat.format(contextName=contextName, workspaceNumber=workspaceNumber, workspaceId=workspaceId)
-#     return workspaceName
-
-# def switchContext(contextNumber):
-#     focusedContextNumber, focusedWorkspaceNumber = getNumbersFromId(getFocusedWorkspaceId())
-#     # If focusedContextNumber == SHARED_CONTEXT it means we're currently on a shared context.
-#     # This means we should not change workspace here at all.
-#     if focusedContextNumber != SHARED_CONTEXT:
-#         switchWorkspace(getWorkspaceName(contextNumber, focusedWorkspaceNumber))
-
-# def moveContext(contextNumber):
-#     focusedContextNumber, focusedWorkspaceNumber = getNumbersFromId(getFocusedWorkspaceId())
-#     # If focusedContextNumber == SHARED_CONTEXT it means we're currently on a shared context.
-#     # This means we should not change workspace here at all.
-#     if focusedContextNumber != SHARED_CONTEXT:
-#         workspaceName = getWorkspaceName(contextNumber, focusedWorkspaceNumber)
-#         moveWorkspace(workspaceName)
-#         switchWorkspace(workspaceName)
 
 def maybeInt(x):
     try:
@@ -132,17 +113,26 @@ def setupArgs():
     return args
 
 def i3SwitchWorkspace(workspace):
-    print("Switching to {}".format(workspace.name))
     os.system("i3-msg workspace {}".format(workspace.name))
 
 def i3MoveWindow(workspace):
-    print("Moving to {}".format(workspace.name))
     os.system("i3-msg move workspace {}".format(workspace.name))
+
+def i3ChangeOutput(output):
+    os.system("i3-msg move workspace to output {}".format(output))
 
 def switchOrMove(sourceWorkspace, targetWorkspace, move):
     if move:
         i3MoveWindow(targetWorkspace)
     i3SwitchWorkspace(targetWorkspace)
+
+def changeToPreferredOutput(targetWorkspace):
+    availableOutputs = [output["name"] for output in i3.get_outputs()]
+    for (output, workspaces) in outputMap.items():
+        print(targetWorkspace.rawName)
+        if output in availableOutputs and targetWorkspace.rawName in workspaces:
+            print("Changing to {}".format(output))
+            i3ChangeOutput(output)
 
 def getTargetWorkspace(args, source, lastNonSharedContext):
     if args.type == "workspace":
@@ -166,9 +156,12 @@ def main(args):
     focusedWorkspace = Workspace.fromFocus()
     lastNonSharedContext = watchContext.getContext()
     targetWorkspace = getTargetWorkspace(args, focusedWorkspace, lastNonSharedContext)
+    workspaceExisted = targetWorkspace.isOpenAlready
     switchOrMove(focusedWorkspace, targetWorkspace, args.move)
     if not targetWorkspace.context.shared:
         watchContext.setContext(targetWorkspace.context.id_)
+    if not workspaceExisted:
+        changeToPreferredOutput(targetWorkspace)
 
 if __name__ == "__main__":
     args = setupArgs()
