@@ -9,10 +9,11 @@ workspaceNameFormat = "{workspaceId}:{contextName}{workspaceNumber}"
 sharedWorkspaceNameFormat = "{workspaceId}:{workspaceName}"
 
 numSharedWorkspaces = len(sharedWorkspaceNames)
-offsetPerContext = (ceil(workspacesPerContext / niceNumber)) * niceNumber
+offsetPerContext = workspacesPerContext
 minContextOffset = ceil(numSharedWorkspaces / offsetPerContext) * offsetPerContext
 
 SHARED_CONTEXT = -1
+print(offsetPerContext, minContextOffset)
 
 class Context:
     def __init__(self, id_):
@@ -69,7 +70,11 @@ class Workspace:
 
     @staticmethod
     def fromSharedName(name):
-        return Workspace(sharedWorkspaceNames.index(name))
+        if ":" in name:
+            id_, rawName = name.split(":")
+            return Workspace(sharedWorkspaceNames.index(rawName))
+        else:
+            return Workspace(sharedWorkspaceNames.index(name))
 
     @property
     def name(self):
@@ -163,6 +168,8 @@ def main(args):
     lastNonSharedContext = watchContext.getContext()
     targetWorkspace = getTargetWorkspace(args, focusedWorkspace, lastNonSharedContext)
     switchOrMove(focusedWorkspace, targetWorkspace, args.move)
+    if not targetWorkspace.context.shared:
+        watchContext.setContext(targetWorkspace.context.id_)
 
 if __name__ == "__main__":
     args = setupArgs()

@@ -2,6 +2,7 @@ import unittest
 import switch
 from switch import Workspace, Context
 import config
+import watchContext
 
 class Args:
     def __init__(self, type_, target, move):
@@ -11,7 +12,7 @@ class Args:
 
 class TestSwitch(unittest.TestCase):
     def nonSharedWorkspaces(self, contextId):
-        for workspaceNumber in range(1, config.workspacesPerContext+1):
+        for workspaceNumber in range(0, config.workspacesPerContext):
             yield Workspace.fromNumbers(contextId, workspaceNumber)
 
     def sharedWorkspaces(self):
