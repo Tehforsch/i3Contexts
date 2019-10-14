@@ -1,9 +1,7 @@
 contextNames:
-    0: "a"
-    1: "b"
-    2: "c"
-    3: "d"
-    4: "e"
+    0: "work"
+    1: "personal"
+    2: "movies"
 sharedWorkspaceNames:
     - "chat"
     - "music"
