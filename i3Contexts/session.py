@@ -10,16 +10,15 @@ class Session:
         self.switch(currentWorkspace)
 
     @property
-    def lastSharedContext(self):
-        print("not implemented")
-        return 0
+    def lastNonSharedContext(self):
+        assert len(self.workspaces) > 0
+        return self.getWorkspacesByVisitTime()[0].context
 
     def changeToPreferredOutput(self, targetWorkspace):
         availableOutputs = [output["name"] for output in i3.get_outputs()]
         for (output, workspaces) in outputMap.items():
             if output in availableOutputs and targetWorkspace.rawName in workspaces:
                 i3ChangeOutput(output)
-
 
     def handleEmptyWorkspace(self, source, target):
         if (source == target and doublePressToNonEmpty) or args.firstNonEmptyWorkspace:
@@ -32,20 +31,22 @@ class Session:
             if self.currentWorkspace.context.shared: 
                 # We come from a shared context. Switch to the last context 
                 # we had before we came to a shared workspace
-                return Workspace.fromContextAndName(self.lastSharedContext, targetStr)
+                return Workspace.fromContextAndName(self.lastNonSharedContext.id_, targetStr)
             else: 
                 # We come from a non-shared context. Just switch via the numbers
                 return Workspace.fromContextAndName(self.currentWorkspace.context.id_, targetStr)
         else: # Shared workspace
             return Workspace.fromSharedName(targetStr)
 
+    def getWorkspacesByVisitTime(self):
+        return sorted(self.workspaces, key=lambda ws: -ws.lastVisit)    
+    
     def getMostRecentWorkspaceInContext(self, context):
-        workspacesInThisContext = [workspace for workspace in self.workspaces if workspace.context == context]
+        workspacesInThisContext = [workspace for workspace in self.getWorkspacesByVisitTime() if workspace.context == context]
         if len(workspacesInThisContext) == 0:
             return Workspace.fromContextAndName(context.id_, config.defaultWorkspaceOnNewContext)
         else:
-            sortedByVisitTime = sorted(workspacesInThisContext, key=lambda ws: -ws.lastVisit)
-            return sortedByVisitTime[0]
+            return workspacesInThisContext[0]
 
     def getSwitchContextTarget(self, targetStr):
         return self.getMostRecentWorkspaceInContext(Context.fromName(targetStr))

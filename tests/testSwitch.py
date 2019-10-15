@@ -1,5 +1,5 @@
 import unittest
-from i3Contexts import main
+from i3Contexts import switch
 from i3Contexts.workspace import Workspace
 from i3Contexts.context import Context
 from i3Contexts.session import Session
@@ -36,6 +36,7 @@ class TestSwitch(unittest.TestCase):
                     session = Session(workspace1)
                     # Switch to the shared workspace
                     target = session.getSwitchWorkspaceTarget(workspace2.rawName)
+                    session.switch(target)
                     self.assertEqual(target.id_, workspace2.id_)
                     self.assertEqual(target.context.id_, config.SHARED_CONTEXT)
                     # Switch back. Check that the context is the previous one

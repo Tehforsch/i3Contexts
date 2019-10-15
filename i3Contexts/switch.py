@@ -2,7 +2,6 @@ import argparse
 from math import ceil
 import i3
 from i3Contexts.config import *
-from i3Contexts import watchContext
 from i3Contexts import i3Utils
 from i3Contexts.workspace import Workspace
 from i3Contexts.context import Context
