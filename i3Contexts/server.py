@@ -8,13 +8,13 @@ from i3Contexts import i3Utils
 
 import i3
 
-def initialConfigurationFromI3Workspaces(session):
+def initialConfigurationFromI3Workspaces():
+    currentWorkspace = next(ws for ws in i3.get_workspaces() if ws["focused"])
+    session = Session(Workspace.fromI3Workspace(currentWorkspace))
     for ws in i3.get_workspaces():
         workspace = Workspace.fromI3Workspace(ws)
-        if ws["focused"]:
-            session.currentWorkspace = workspace
-            session.currentWorkspace.lastVisit=1
         session.workspaces.append(workspace)
+    return session
 
 class i3ContextServer(rpyc.Service):
     def exposed_switchWorkspace(self, targetStr, moveWindow):
@@ -27,8 +27,7 @@ class i3ContextServer(rpyc.Service):
         session.switch(target)
         i3Utils.switchOrMove(target, moveWindow)
 
-session = Session()
-initialConfigurationFromI3Workspaces(session)
+session = initialConfigurationFromI3Workspaces()
 
 server = ThreadedServer(i3ContextServer, port=serverConfig.port)
 server.start()

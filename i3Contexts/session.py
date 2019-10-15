@@ -3,11 +3,8 @@ from i3Contexts.workspace import Workspace
 from i3Contexts.context import Context
 
 class Session:
-    def __init__(self, currentWorkspace=None):
-        if currentWorkspace is None:
-            self.currentWorkspace = Workspace.fromContextAndName(0, config.workspaceNames[0])
-        else:
-            self.currentWorkspace = currentWorkspace
+    def __init__(self, currentWorkspace):
+        self.currentWorkspace = currentWorkspace
         self.workspaces = []
         self.numSwitch = 0
         self.switch(self.currentWorkspace)
