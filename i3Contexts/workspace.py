@@ -5,11 +5,13 @@ from i3Contexts.context import Context
 class Workspace:
     def __init__(self, id_):
         self.id_ = id_
+        self.lastVisit = -1
 
     def __eq__(self, other):
         if self.id_ == other.id_:
             assert self.name == other.name
         return self.id_ == other.id_
+
     @property
     def contextNumber(self):
         return (self.id_ - config.minContextOffset) // config.offsetPerContext
@@ -17,6 +19,13 @@ class Workspace:
     @property
     def context(self):
         return Context(self.contextNumber)
+
+    @property
+    def rawName(self):
+        if self.context.shared:
+            return config.sharedWorkspaceNames[self.number]
+        else:
+            return config.workspaceNames[self.number]
 
     @property
     def number(self):
@@ -27,7 +36,11 @@ class Workspace:
         return any(ws["name"] == self.name for ws in i3.get_workspaces())
 
     @staticmethod
-    def fromNumbers(contextId, workspaceNumber):
+    def fromContextAndName(contextId, workspaceName):
+        if contextId == config.SHARED_CONTEXT:
+            workspaceNumber = config.sharedWorkspaceNames.index(workspaceName)
+        else:
+            workspaceNumber = config.workspaceNames.index(workspaceName)
         return Workspace(config.minContextOffset + config.offsetPerContext * contextId + workspaceNumber)
 
     @staticmethod
@@ -73,20 +86,14 @@ class Workspace:
         return len(i3TreeNodes[0]["nodes"]) == 0
 
     @property
-    def rawName(self):
-        if self.context.shared:
-            return self.name.split(":")[1]
-        else:
-            return self.number
-
-    @property
     def name(self):
         if self.context.shared:
-            return config.sharedWorkspaceNameFormat.format(workspaceId=self.id_, workspaceName=config.sharedWorkspaceNames[self.id_])
-        return config.workspaceNameFormat.format(workspaceId=self.id_, contextName=self.context.name, workspaceNumber=self.number)
+            return config.sharedWorkspaceNameFormat.format(workspaceId=self.id_, workspaceName=self.rawName)
+        else:
+            return config.workspaceNameFormat.format(contextName=self.context.name, workspaceId=self.id_, workspaceName=self.rawName)
 
     def __str__(self):
-        return self.name
+        return self.name + "({})".format(self.lastVisit)
 
     def __repr__(self):
         return str(self)

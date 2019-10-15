@@ -23,3 +23,7 @@ class Context:
     def __eq__(self, other):
         return self.id_ == other.id_
 
+    def fromName(name):
+        if name == "Shared":
+            return Context(config.SHARED_CONTEXT)
+        return Context(config.contextNames.index(name))

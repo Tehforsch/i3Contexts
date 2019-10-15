@@ -20,16 +20,18 @@ def readConfigFile():
 config = readConfigFile()
 
 contextNames = config.get("contextNames", list(string.ascii_lowercase))
-sharedWorkspaceNames = config.get("sharedWorkspaceNames", [])
 workspacesPerContext = config.get("workspacesPerContext", 100)
+sharedWorkspaceNames = config.get("sharedWorkspaceNames", [])
+workspaceNames = config.get("workspaceNames", ["non"+str(x) for x in range(workspacesPerContext)])
 outputMap = config.get("outputMap", {})
 doublePressToNonEmpty = config.get("doublePressToNonEmpty", False)
 lowestWorkspaceNumber = config.get("lowestWorkspaceNumber", 2)
+defaultWorkspaceOnNewContext = config.get("defaultWorkspaceOnNewContext", workspaceNames[0])
 
 makeSureContextFileExists()
 SHARED_CONTEXT = -1
 
-workspaceNameFormat = "{workspaceId}:{contextName}{workspaceNumber}"
+workspaceNameFormat = "{workspaceId}:{contextName}{workspaceName}"
 sharedWorkspaceNameFormat = "{workspaceId}:{workspaceName}"
 
 numSharedWorkspaces = len(sharedWorkspaceNames)

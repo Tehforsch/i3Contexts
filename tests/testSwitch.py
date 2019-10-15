@@ -1,18 +1,14 @@
 import unittest
 from i3Contexts import main
-from i3Contexts.main import Workspace, Context
+from i3Contexts.workspace import Workspace
+from i3Contexts.context import Context
+from i3Contexts.session import Session
 from i3Contexts import config
 
-class Args:
-    def __init__(self, type_, target, firstNonEmptyWorkspace=False):
-        self.type = type_
-        self.target = target
-        self.firstNonEmptyWorkspace = firstNonEmptyWorkspace
-
 class TestSwitch(unittest.TestCase):
-    def nonSharedWorkspaces(self, contextId):
-        for workspaceNumber in range(0, config.workspacesPerContext):
-            yield Workspace.fromNumbers(contextId, workspaceNumber)
+    def workspaceNames(self, contextId):
+        for name in config.workspaceNames:
+            yield Workspace.fromContextAndName(contextId, name)
 
     def sharedWorkspaces(self):
         for name in config.sharedWorkspaceNames:
@@ -25,35 +21,25 @@ class TestSwitch(unittest.TestCase):
 
     def testSwitchWorkspace(self):
         for context in self.contexts:
-            for workspace1 in self.nonSharedWorkspaces(context.id_):
-                for workspace2 in self.nonSharedWorkspaces(context.id_):
-                    args = Args("workspace", workspace2.number)
-                    target = main.getTargetWorkspace(args, workspace1, context.id_)
+            for workspace1 in self.workspaceNames(context.id_):
+                for workspace2 in self.workspaceNames(context.id_):
+                    session = Session(workspace1)
+                    target = session.getSwitchWorkspaceTarget(workspace2.rawName)
                     self.assertEqual(target.number, workspace2.number)
                     self.assertEqual(target.context, workspace1.context)
                     self.assertEqual(target.context, context)
 
-    def testSwitchContext(self):
-        for context1 in self.contexts:
-            for workspace in self.nonSharedWorkspaces(context1.id_):
-                for context2 in self.contexts:
-                    args = Args("context", context2.id_)
-                    target = main.getTargetWorkspace(args, workspace, context1.id_)
-                    self.assertEqual(target.number, workspace.number)
-                    self.assertEqual(target.context, context2)
-
     def testSwitchNonSharedToSharedWorkspace(self):
         for context in self.contexts:
-            for workspace1 in self.nonSharedWorkspaces(context.id_):
+            for workspace1 in self.workspaceNames(context.id_):
                 for workspace2 in self.sharedWorkspaces():
-                    args = Args("workspace", workspace2.name)
+                    session = Session(workspace1)
                     # Switch to the shared workspace
-                    target = main.getTargetWorkspace(args, workspace1, context.id_)
+                    target = session.getSwitchWorkspaceTarget(workspace2.rawName)
                     self.assertEqual(target.id_, workspace2.id_)
                     self.assertEqual(target.context.id_, config.SHARED_CONTEXT)
                     # Switch back. Check that the context is the previous one
-                    args = Args("workspace", workspace1.number)
-                    target = main.getTargetWorkspace(args, workspace2, context.id_)
+                    target = session.getSwitchWorkspaceTarget(workspace1.rawName)
                     self.assertEqual(target.number, workspace1.number)
                     self.assertEqual(target.context, context)
 
@@ -61,17 +47,41 @@ class TestSwitch(unittest.TestCase):
         for context in self.contexts:
             for workspace1 in self.sharedWorkspaces():
                 for workspace2 in self.sharedWorkspaces():
-                    args = Args("workspace", workspace2.name)
-                    target = main.getTargetWorkspace(args, workspace1, context.id_)
+                    session = Session(workspace1)
+                    target = session.getSwitchWorkspaceTarget(workspace2.rawName)
                     self.assertEqual(target.name, workspace2.name)
                     self.assertEqual(target.context.id_, config.SHARED_CONTEXT)
 
-    def testSwitchingContextWhenOnSharedWorkspace(self):
-        for context in self.contexts:
-            for workspace in self.sharedWorkspaces():
-                args = Args("context", context.id_, firstNonEmptyWorkspace=False)
-                target = main.getTargetWorkspace(args, workspace, context.id_)
-                self.assertEqual(target, workspace)
-                self.assertEqual(target.context.id_, config.SHARED_CONTEXT)
+    def testSwitchToEmptyContext(self):
+        for context1 in self.contexts:
+            for workspace in self.workspaceNames(context1.id_):
+                for context2 in self.contexts:
+                    if context2 == workspace.context:
+                        continue
+                    session = Session(workspace)
+                    target = session.getSwitchContextTarget(context2.name)
+                    self.assertEqual(target.rawName, config.defaultWorkspaceOnNewContext)
+                    self.assertEqual(target.context, context2)
 
-main.doublePressToNonEmpty = False
+    def testSwitchBackToContext(self):
+        for context1 in self.contexts:
+            for workspace in self.workspaceNames(context1.id_):
+                for context2 in self.contexts:
+                    session = Session(workspace)
+                    target = session.getSwitchContextTarget(context2.name)
+                    session.switch(target)
+                    target = session.getSwitchContextTarget(context1.name)
+                    assert target == workspace
+
+    def testSwitchBackToContextWithMultipleWorkspaces(self):
+        for context1 in self.contexts:
+            # amazing hack to loop over workspaces in pairs of two
+            workspaces=self.workspaceNames(context1.id_)
+            for (workspace1, workspace2) in zip(workspaces, workspaces):
+                for context2 in self.contexts:
+                    session = Session(workspace1)
+                    session.switch(session.getSwitchWorkspaceTarget(workspace2.rawName))
+                    session.switch(session.getSwitchContextTarget(context2.name))
+                    target = session.getSwitchContextTarget(context1.name)
+                    assert target == workspace2
+

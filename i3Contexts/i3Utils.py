@@ -9,3 +9,8 @@ def i3MoveWindow(workspace):
 def i3ChangeOutput(output):
     os.system("i3-msg move workspace to output {}".format(output))
 
+def switchOrMove(targetWorkspace, move):
+    if move:
+        i3MoveWindow(targetWorkspace)
+    i3Utils.i3SwitchWorkspace(targetWorkspace)
+
