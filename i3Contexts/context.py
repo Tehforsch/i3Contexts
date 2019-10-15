@@ -6,7 +6,7 @@ class Context:
 
     @property
     def shared(self):
-        return self.id_ == config.SHARED_CONTEXT
+        return self.id_ == config.sharedContext
 
     @property
     def name(self):
@@ -25,5 +25,5 @@ class Context:
 
     def fromName(name):
         if name == "Shared":
-            return Context(config.SHARED_CONTEXT)
+            return Context(config.sharedContext)
         return Context(config.contextNames.index(name))

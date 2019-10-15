@@ -3,11 +3,14 @@ from i3Contexts.workspace import Workspace
 from i3Contexts.context import Context
 
 class Session:
-    def __init__(self, currentWorkspace):
+    def __init__(self, currentWorkspace=None):
+        if currentWorkspace is None:
+            self.currentWorkspace = Workspace.fromContextAndName(0, config.workspaceNames[0])
+        else:
+            self.currentWorkspace = currentWorkspace
         self.workspaces = []
-        self.currentWorkspace = currentWorkspace
         self.numSwitch = 0
-        self.switch(currentWorkspace)
+        self.switch(self.currentWorkspace)
 
     @property
     def lastNonSharedContext(self):

@@ -1,10 +1,11 @@
+import rpyc
 import argparse
 from math import ceil
 import i3
-from i3Contexts.config import *
 from i3Contexts import i3Utils
 from i3Contexts.workspace import Workspace
 from i3Contexts.context import Context
+from i3Contexts import serverConfig
 
 def setupArgs():
     parser = argparse.ArgumentParser(description='Switch i3 workspaces and move windows between them based on contexts.')
@@ -15,36 +16,10 @@ def setupArgs():
     args = parser.parse_args()
     return args
 
-def main(args):
-    session = Session()
-    handleArgs(session, args)
-
-def switchWorkspace(session, targetStr, moveWindow):
-    target = self.getSwitchWorkspaceTarget(targetStr)
-    session.switch(target)
-    i3Utils.switchOrMove(target, moveWindow)
-
-def switchContext(session, targetStr, moveWindow):
-    target = self.getSwitchContextTarget(targetStr)
-    session.switch(target)
-    i3Utils.switchOrMove(target, moveWindow)
-
-def handleArgs(session, args):
+def main():
+    args = setupArgs()
+    server = rpyc.connect("localhost", serverConfig.port).root
     if args.type == "workspace":
-        switchWorkspace(session, args.target, args.move)
+        server.switchWorkspace(args.target, args.move)
     else:
-        switchContext(session, args.target, args.move)
-
-def main(args):
-    handleArgs(args)
-
-# def main(args):
-#     focusedWorkspace = Workspace.fromFocus()
-#     lastNonSharedContext = watchContext.getContext()
-#     targetWorkspace = getTargetWorkspace(args, focusedWorkspace, lastNonSharedContext)
-#     workspaceExisted = targetWorkspace.isOpenAlready
-#     i3Utils.switchOrMove(focusedWorkspace, targetWorkspace, args.move)
-#     if not targetWorkspace.context.shared:
-#         watchContext.setContext(targetWorkspace.context.id_)
-#     if not workspaceExisted:
-#         changeToPreferredOutput(targetWorkspace)
+        server.switchContext(args.target, args.move)

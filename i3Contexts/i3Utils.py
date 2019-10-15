@@ -12,5 +12,5 @@ def i3ChangeOutput(output):
 def switchOrMove(targetWorkspace, move):
     if move:
         i3MoveWindow(targetWorkspace)
-    i3Utils.i3SwitchWorkspace(targetWorkspace)
+    i3SwitchWorkspace(targetWorkspace)
 

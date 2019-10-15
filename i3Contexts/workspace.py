@@ -37,7 +37,7 @@ class Workspace:
 
     @staticmethod
     def fromContextAndName(contextId, workspaceName):
-        if contextId == config.SHARED_CONTEXT:
+        if contextId == config.sharedContext:
             workspaceNumber = config.sharedWorkspaceNames.index(workspaceName)
         else:
             workspaceNumber = config.workspaceNames.index(workspaceName)
