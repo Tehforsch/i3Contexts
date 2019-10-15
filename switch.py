@@ -89,10 +89,16 @@ class Workspace:
 
     @staticmethod
     def fromFirstNonEmptyOnSameContext(source):
+        workspacesInThisContext = []
         for i3workspace in sorted(i3.get_workspaces(), key = lambda ws: ws["num"]):
             workspace = Workspace.fromI3Workspace(i3workspace)
             if workspace.context == source.context:
-                return workspace
+                i3TreeNode = i3.filter(name=workspace.name)[0]
+                workspacesInThisContext.append(i3TreeNode)
+        # In the following we filter only for workspaces that contain a window.
+        nonEmptyWorkspacesInThisContext = [workspace for workspace in workspacesInThisContext if len(workspace["nodes"]) != 0]
+        if len(nonEmptyWorkspacesInThisContext) > 0:
+            return Workspace.fromI3Workspace(nonEmptyWorkspacesInThisContext[0])
         return source
 
     @property
