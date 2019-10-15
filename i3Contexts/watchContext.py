@@ -1,4 +1,4 @@
-import config
+from i3Contexts import config
 
 def getContext():
     with config.contextFile.open("r") as f:

@@ -1,5 +1,2 @@
-remote="$1"
-url="$2"
-
-python3 test.py
+python3 -m unittest discover
 exit $?
