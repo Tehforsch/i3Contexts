@@ -121,7 +121,7 @@ def maybeInt(x):
         return x
 
 def setupArgs():
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='Switch i3 workspaces and move windows between them based on contexts.')
     parser.add_argument('type', type=str, choices=["context", "workspace"], help="Whether to change context or workspace")
     parser.add_argument('target', type=maybeInt, help="Number of target context or workspace.")
     parser.add_argument('--move', action='store_true', help="Take the currently focused window with you while switching to new context/workspace")
