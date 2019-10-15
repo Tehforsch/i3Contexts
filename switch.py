@@ -185,7 +185,9 @@ def getTargetWorkspace(args, source, lastNonSharedContext):
     if args.type == "context":
         if source.context.shared:
             if args.firstNonEmptyWorkspace:
-                target = handleEmptyWorkspace(args, source, Workspace.fromNumbers(source.context.id_, lowestWorkspaceNumber))
+                target = handleEmptyWorkspace(args, source, Workspace.fromNumbers(args.target, lowestWorkspaceNumber))
+                if target is not None:
+                    return target
             else:
                 return source
         assert type(args.target) == int
