@@ -165,8 +165,6 @@ def changeToPreferredOutput(targetWorkspace):
             i3ChangeOutput(output)
 
 def handleEmptyWorkspace(args, source, target):
-    if not target.empty:
-        return target
     if (source == target and doublePressToNonEmpty) or args.firstNonEmptyWorkspace:
         return Workspace.fromFirstNonEmptyOnSameContext(target)
     else:
@@ -186,10 +184,14 @@ def getTargetWorkspace(args, source, lastNonSharedContext):
             return Workspace.fromSharedName(args.target)
     if args.type == "context":
         if source.context.shared:
-            return source
+            if args.firstNonEmptyWorkspace:
+                target = handleEmptyWorkspace(args, source, Workspace.fromNumbers(source.context.id_, lowestWorkspaceNumber))
+            else:
+                return source
         assert type(args.target) == int
         target = Workspace.fromNumbers(args.target, source.number)
-        target = handleEmptyWorkspace(args, source, target)
+        if target.empty:
+            target = handleEmptyWorkspace(args, source, target)
         return target
 
 def main(args):
