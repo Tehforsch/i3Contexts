@@ -5,6 +5,8 @@ def getContext():
         return int(f.read())
 
 def setContext(context):
+    if context < 0:
+        return
     with config.contextFile.open("w") as f:
         f.write(str(context))
 
