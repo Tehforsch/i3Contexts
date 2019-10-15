@@ -89,17 +89,25 @@ class Workspace:
 
     @staticmethod
     def fromFirstNonEmptyOnSameContext(source):
-        workspacesInThisContext = []
+        nonEmptyWorkspacesInThisContext = []
         for i3workspace in sorted(i3.get_workspaces(), key = lambda ws: ws["num"]):
             workspace = Workspace.fromI3Workspace(i3workspace)
-            if workspace.context == source.context:
-                i3TreeNode = i3.filter(name=workspace.name)[0]
-                workspacesInThisContext.append(i3TreeNode)
-        # In the following we filter only for workspaces that contain a window.
-        nonEmptyWorkspacesInThisContext = [workspace for workspace in workspacesInThisContext if len(workspace["nodes"]) != 0]
+            if workspace.context == source.context and not workspace.empty:
+                nonEmptyWorkspacesInThisContext.append(workspace)
         if len(nonEmptyWorkspacesInThisContext) > 0:
-            return Workspace.fromI3Workspace(nonEmptyWorkspacesInThisContext[0])
+            return nonEmptyWorkspacesInThisContext[0]
         return source
+
+    @property
+    def empty(self):
+        i3TreeNodes = i3.filter(name=self.name)
+        # This workspace is not open - it's empty
+        if len(i3TreeNodes) == 0:
+            return True
+        # If it does not have child nodes, it's empty
+        return len(i3TreeNodes[0]["nodes"]) == 0
+
+
 
     @property
     def rawName(self):
@@ -131,6 +139,7 @@ def setupArgs():
     parser.add_argument('type', type=str, choices=["context", "workspace"], help="Whether to change context or workspace")
     parser.add_argument('target', type=maybeInt, help="Number of target context or workspace.")
     parser.add_argument('--move', action='store_true', help="Take the currently focused window with you while switching to new context/workspace")
+    parser.add_argument('--firstNonEmptyWorkspace', action='store_true', help="If this flag is true, a context switch will automatically go to the first (that is: lowest number) workspace on the given context if the first workspace that it switches to is empty.")
     args = parser.parse_args()
     return args
 
@@ -155,9 +164,11 @@ def changeToPreferredOutput(targetWorkspace):
             print("Changing to {}".format(output))
             i3ChangeOutput(output)
 
-def handleDoublePress(source, target):
-    if source == target and doublePressToNonEmpty:
-        return Workspace.fromFirstNonEmptyOnSameContext(source)
+def handleEmptyWorkspace(args, source, target):
+    if not target.empty:
+        return target
+    if (source == target and doublePressToNonEmpty) or args.firstNonEmptyWorkspace:
+        return Workspace.fromFirstNonEmptyOnSameContext(target)
     else:
         return target
 
@@ -178,7 +189,7 @@ def getTargetWorkspace(args, source, lastNonSharedContext):
             return source
         assert type(args.target) == int
         target = Workspace.fromNumbers(args.target, source.number)
-        target = handleDoublePress(source, target)
+        target = handleEmptyWorkspace(args, source, target)
         return target
 
 def main(args):
