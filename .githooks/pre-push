@@ -1,0 +1,5 @@
+remote="$1"
+url="$2"
+
+python3 test.py
+exit $?
