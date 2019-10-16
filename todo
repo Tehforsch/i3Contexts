@@ -1,0 +1,2 @@
+there is some weird bug where sometimes switching workspace also switches context 0o
+add some logging because these are impossible to debug otherwise
