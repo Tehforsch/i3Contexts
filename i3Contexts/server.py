@@ -26,7 +26,6 @@ def changeToPreferredOutput(session, targetWorkspace):
         if output in availableOutputs and targetWorkspace.rawName in workspaces:
             i3Utils.i3ChangeOutput(output)
 
-
 class i3ContextServer(rpyc.Service):
     def exposed_switchWorkspace(self, targetStr, moveWindow):
         self.switch(session.getSwitchWorkspaceTarget, targetStr, moveWindow)
@@ -37,9 +36,11 @@ class i3ContextServer(rpyc.Service):
     def switch(self, targetFunction, targetStr, moveWindow):
         updateFromI3(session)
         target = targetFunction(targetStr)
+        wasAlreadyOpen = target in session.workspaces
         session.switch(target)
         i3Utils.switchOrMove(target, moveWindow)
-        changeToPreferredOutput(session, target)
+        if not wasAlreadyOpen:
+            changeToPreferredOutput(session, target)
 
 session = initialConfigurationFromI3Workspaces()
 
