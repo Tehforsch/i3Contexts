@@ -14,12 +14,6 @@ class Session:
         assert len(self.workspaces) > 0
         return self.getWorkspacesByVisitTime()[0].context
 
-    def changeToPreferredOutput(self, targetWorkspace):
-        availableOutputs = [output["name"] for output in i3.get_outputs()]
-        for (output, workspaces) in outputMap.items():
-            if output in availableOutputs and targetWorkspace.rawName in workspaces:
-                i3ChangeOutput(output)
-
     def handleEmptyWorkspace(self, source, target):
         if (source == target and doublePressToNonEmpty) or args.firstNonEmptyWorkspace:
             return Workspace.fromFirstNonEmptyOnSameContext(target)

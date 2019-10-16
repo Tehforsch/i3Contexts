@@ -14,7 +14,7 @@ configFile = Path(os.path.expanduser("~"), ".i3Context")
 config = readConfigFile(configFile)
 
 contextNames = config.get("contextNames", list(string.ascii_lowercase))
-workspaceNames = config.get("workspaceNames", [str(x) for x in range(10)])
+workspaceNames = config.get("workspaceNames", [str(x) for x in range(100)])
 sharedWorkspaceNames = config.get("sharedWorkspaceNames", [])
 outputMap = config.get("outputMap", {})
 defaultWorkspaceOnNewContext = config.get("defaultWorkspaceOnNewContext", workspaceNames[0])
