@@ -51,11 +51,24 @@ class Workspace:
                 return Workspace.fromI3Workspace(ws)
 
     @staticmethod
+    def fromImproperWorkspace(i3workspace):
+        return Workspace(-1)
+
+    @staticmethod
     def fromI3Workspace(i3workspace):
-        if i3workspace["name"] in config.sharedWorkspaceNames:
-            return Workspace.fromSharedName(i3workspace["name"])
+        if not ":" in i3workspace["name"]:
+            return Workspace.fromImproperWorkspace(i3workspace["name"])
         else:
-            return Workspace(i3workspace["num"])
+            id_, name = i3workspace["name"].split(":")
+            id_ = int(id_)
+            if name in config.sharedWorkspaceNames:
+                w = Workspace.fromSharedName(name)
+                assert w.id_ == id_
+                return w
+            else:
+                w = Workspace(i3workspace["num"])
+                assert w.id_ == id_
+                return w
 
     @staticmethod
     def fromSharedName(name):
@@ -64,6 +77,9 @@ class Workspace:
             return Workspace(config.sharedWorkspaceNames.index(rawName))
         else:
             return Workspace(config.sharedWorkspaceNames.index(name))
+
+    def __hash__(self):
+        return self.id_.__hash__()
 
     @staticmethod
     def fromFirstNonEmptyOnSameContext(source):
