@@ -46,8 +46,12 @@ class Session:
         return self.getMostRecentWorkspaceInContext(Context.fromName(targetStr))
 
     def switch(self, workspace):
-        if not workspace in self.workspaces:
+        if workspace in self.workspaces:
+            # Make sure we point to the instance in the list and not to some random instance.
+            workspace = next(ws for ws in self.workspaces if ws == workspace)
+        else:
             self.workspaces.append(workspace)
-        self.currentWorkspace.lastVisit = self.numSwitch
         self.numSwitch += 1
         self.currentWorkspace = workspace
+        if not self.currentWorkspace.context.shared:
+            self.currentWorkspace.lastVisit = self.numSwitch

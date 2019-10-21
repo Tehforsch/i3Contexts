@@ -84,3 +84,10 @@ class TestSession(unittest.TestCase):
                     session.switch(session.getSwitchContextTarget(context2.name))
                     target = session.getSwitchContextTarget(context1.name)
                     assert target == workspace2
+
+                    session = Session(workspace2)
+                    session.switch(session.getSwitchWorkspaceTarget(workspace1.rawName))
+                    session.switch(session.getSwitchContextTarget(context2.name))
+                    target = session.getSwitchContextTarget(context1.name)
+                    assert target == workspace1
+
