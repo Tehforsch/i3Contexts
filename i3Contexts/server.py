@@ -41,6 +41,7 @@ def changeToPreferredOutput(session, targetWorkspace):
     availableOutputs = [output["name"] for output in i3.get_outputs()]
     for (output, workspaces) in config.outputMap.items():
         if output in availableOutputs and targetWorkspace.rawName in workspaces:
+            print("Changing to {}".format(output))
             i3Utils.i3ChangeOutput(output)
 
 class i3ContextServer(rpyc.Service):
