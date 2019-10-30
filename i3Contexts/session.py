@@ -12,7 +12,11 @@ class Session:
     @property
     def lastNonSharedContext(self):
         assert len(self.workspaces) > 0
-        return self.getWorkspacesByVisitTime()[0].context
+        nonSharedByVisitTime = [ws for ws in self.getWorkspacesByVisitTime() if not ws.context.shared]
+        if len(nonSharedByVisitTime) == 0:
+            return Context(0)
+        else:
+            return next(ws.context for ws in nonSharedByVisitTime)
 
     def handleEmptyWorkspace(self, source, target):
         if (source == target and doublePressToNonEmpty) or args.firstNonEmptyWorkspace:
