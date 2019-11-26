@@ -6,7 +6,7 @@ from math import ceil
 
 def readConfigFile(configFile):
     with configFile.open("r") as f:
-        config = yaml.unsafe_load(f)
+        config = yaml.load(f)
         return config
 
 configFile = Path(os.path.expanduser("~"), ".i3Context")
