@@ -23,7 +23,10 @@ class Workspace:
     @property
     def rawName(self):
         if self.context.shared:
-            return config.sharedWorkspaceNames[self.number]
+            try:
+                return config.sharedWorkspaceNames[self.number]
+            except:
+                return "Wrong workspace (id: {})".format(self.id_)
         else:
             return config.workspaceNames[self.number]
 
